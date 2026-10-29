@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cybersecurity Incident Portal</title>
+    <!-- Google Fonts & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+    <!-- Cybersecurity Top Navigation Bar -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark cyber-navbar shadow-sm sticky-top">
+            <div class="container-fluid px-lg-4">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <div class="brand-icon-shield me-2">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="brand-title">CYBER<span class="text-info">SEC</span> PORTAL</span>
+                        <span class="brand-subtitle">Incident Reporting & Triage</span>
+                    </div>
+                </a>
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i>Home
+                            </a>
+                        </li>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")" 
+                                       asp-controller="Admin" asp-action="Dashboard">
+                                        <i class="bi bi-speedometer2 me-1"></i>Admin Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Incidents" ? "active" : "")" 
+                                       asp-controller="Admin" asp-action="Incidents">
+                                        <i class="bi bi-shield-exclamation me-1"></i>Incident Management
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Incident" && ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")" 
+                                       asp-controller="Incident" asp-action="Dashboard">
+                                        <i class="bi bi-speedometer2 me-1"></i>My Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Incident" && ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active" : "")" 
+                                       asp-controller="Incident" asp-action="Create">
+                                        <i class="bi bi-plus-circle me-1"></i>Report Incident
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Global Flash Notification Alerts -->
+    <div class="container-fluid px-lg-4 mt-3">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle-fill fs-5 me-2 text-success"></i>
+                <div>@TempData["SuccessMessage"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
+                <div>@TempData["ErrorMessage"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    </div>
+
+    <!-- Main Content Area -->
+    <main role="main" class="flex-grow-1 container-fluid px-lg-4 py-3">
+        @RenderBody()
+    </main>
+
+    <!-- Cybersecurity Professional Footer -->
+    <footer class="cyber-footer text-light py-4 mt-auto">
+        <div class="container-fluid px-lg-4">
+            <div class="row align-items-center gy-3">
+                <div class="col-md-6 text-center text-md-start">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start mb-1">
+                        <span class="status-indicator-dot me-2"></span>
+                        <span class="small text-muted">SOC Status: <strong>NORMAL OPERATIONS (DEFCON 5)</strong></span>
+                    </div>
+                    <div class="small text-muted">
+                        Cybersecurity Incident Reporting Portal &bull; B.Tech Computer Engineering Capstone Project
+                    </div>
+                </div>
+                <div class="col-md-6 text-center text-md-end small text-muted">
+                    <span class="me-3"><i class="bi bi-lock me-1"></i>AES-256 / SHA-256 Protected</span>
+                    <span>Role-Based Access Control Enforced</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

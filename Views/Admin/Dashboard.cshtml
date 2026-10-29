@@ -1,0 +1,260 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Security Operations Center (SOC) Dashboard";
+}
+
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="fw-bold text-dark mb-1">Security Operations Center Dashboard</h2>
+        <p class="text-muted mb-0">
+            Real-time Threat Monitoring & Incident Remediation Console
+        </p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <a asp-action="Incidents" class="btn btn-primary btn-lg shadow-sm">
+            <i class="bi bi-shield-exclamation me-2"></i>Manage All Incidents
+        </a>
+    </div>
+</div>
+
+<!-- SOC High-Level Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-2">
+        <div class="cyber-stat-card d-flex align-items-center justify-content-between p-3">
+            <div>
+                <span class="text-uppercase small fw-bold text-muted">Total</span>
+                <h3 class="fw-bold text-dark mb-0 mt-1">@Model.TotalIncidents</h3>
+            </div>
+            <div class="stat-icon-wrapper icon-primary" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                <i class="bi bi-folder2"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="cyber-stat-card stat-critical d-flex align-items-center justify-content-between p-3">
+            <div>
+                <span class="text-uppercase small fw-bold text-danger">Critical</span>
+                <h3 class="fw-bold text-danger mb-0 mt-1">@Model.CriticalIncidents</h3>
+            </div>
+            <div class="stat-icon-wrapper icon-critical" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                <i class="bi bi-fire"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="cyber-stat-card stat-info d-flex align-items-center justify-content-between p-3">
+            <div>
+                <span class="text-uppercase small fw-bold text-muted">Submitted</span>
+                <h3 class="fw-bold text-dark mb-0 mt-1">@Model.OpenIncidents</h3>
+            </div>
+            <div class="stat-icon-wrapper icon-info" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                <i class="bi bi-inbox-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="cyber-stat-card stat-warning d-flex align-items-center justify-content-between p-3">
+            <div>
+                <span class="text-uppercase small fw-bold text-muted">Investigating</span>
+                <h3 class="fw-bold text-dark mb-0 mt-1">@Model.UnderInvestigationIncidents</h3>
+            </div>
+            <div class="stat-icon-wrapper icon-warning" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                <i class="bi bi-search"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="cyber-stat-card stat-success d-flex align-items-center justify-content-between p-3">
+            <div>
+                <span class="text-uppercase small fw-bold text-muted">Resolved</span>
+                <h3 class="fw-bold text-success mb-0 mt-1">@Model.ResolvedIncidents</h3>
+            </div>
+            <div class="stat-icon-wrapper icon-success" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                <i class="bi bi-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="cyber-stat-card d-flex align-items-center justify-content-between p-3" style="border-left-color: #64748b;">
+            <div>
+                <span class="text-uppercase small fw-bold text-muted">Closed</span>
+                <h3 class="fw-bold text-secondary mb-0 mt-1">@Model.ClosedIncidents</h3>
+            </div>
+            <div class="stat-icon-wrapper icon-primary" style="width: 40px; height: 40px; font-size: 1.25rem;">
+                <i class="bi bi-archive-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Row: Category & Severity Breakdown Charts -->
+<div class="row g-4 mb-4">
+    <!-- Category Breakdown -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-pie-chart me-2 text-primary"></i>Incidents by Threat Category</h5>
+            </div>
+            <div class="card-body p-4">
+                @if (Model.IncidentsByCategory.Any())
+                {
+                    foreach (var cat in Model.IncidentsByCategory)
+                    {
+                        var percentage = Model.TotalIncidents > 0 ? (cat.Value * 100) / Model.TotalIncidents : 0;
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold text-dark">@cat.Key</span>
+                                <span class="badge bg-light text-dark border">@cat.Value (@percentage%)</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted small fst-italic">No category data recorded yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Severity Breakdown -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-bar-chart me-2 text-primary"></i>Incidents by Severity Level</h5>
+            </div>
+            <div class="card-body p-4">
+                @if (Model.IncidentsBySeverity.Any())
+                {
+                    foreach (var sev in Model.IncidentsBySeverity)
+                    {
+                        var percentage = Model.TotalIncidents > 0 ? (sev.Value * 100) / Model.TotalIncidents : 0;
+                        var barColor = sev.Key switch
+                        {
+                            IncidentSeverity.Critical => "bg-danger",
+                            IncidentSeverity.High => "bg-warning",
+                            IncidentSeverity.Medium => "bg-info",
+                            _ => "bg-success"
+                        };
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold text-dark">@sev.Key Severity</span>
+                                <span class="badge bg-light text-dark border">@sev.Value (@percentage%)</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar @barColor" role="progressbar" style="width: @percentage%" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted small fst-italic">No severity data recorded yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Incidents Table -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-clock-history me-2 text-primary"></i>Recent Incidents Dispatch Stream
+        </h5>
+        <a asp-action="Incidents" class="btn btn-sm btn-outline-primary px-3 rounded-pill">
+            View All Incidents <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+    <div class="card-body p-0">
+        @if (Model.RecentIncidents.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase font-monospace">
+                        <tr>
+                            <th class="ps-4">Reference</th>
+                            <th>Title & Category</th>
+                            <th>Reporter</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Created On</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.RecentIncidents)
+                        {
+                            var severityClass = item.Severity switch
+                            {
+                                IncidentSeverity.Critical => "badge-severity-critical",
+                                IncidentSeverity.High => "badge-severity-high",
+                                IncidentSeverity.Medium => "badge-severity-medium",
+                                _ => "badge-severity-low"
+                            };
+
+                            var statusClass = item.Status switch
+                            {
+                                IncidentStatus.Submitted => "badge-status-submitted",
+                                IncidentStatus.UnderInvestigation => "badge-status-investigation",
+                                IncidentStatus.Resolved => "badge-status-resolved",
+                                _ => "badge-status-closed"
+                            };
+
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="incident-ref-badge">@item.IncidentReference</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">@item.Title</div>
+                                    <small class="text-muted"><i class="bi bi-tag me-1"></i>@item.Category</small>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-dark">@(item.ReportedByUser?.FullName ?? "Unknown")</div>
+                                    <small class="text-muted">@(item.ReportedByUser?.Department ?? "Staff")</small>
+                                </td>
+                                <td>
+                                    <span class="badge @severityClass px-2 py-1 rounded-pill">
+                                        @item.Severity
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @statusClass px-2 py-1 rounded-pill">
+                                        @item.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="small text-dark">@item.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</div>
+                                    <small class="text-muted">@item.CreatedAt.ToLocalTime().ToString("hh:mm tt")</small>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary px-3 rounded-pill">
+                                        <i class="bi bi-gear me-1"></i>Triage & Manage
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state-box">
+                <i class="bi bi-shield-check empty-state-icon text-success"></i>
+                <h5 class="fw-bold text-dark">No Incidents In System</h5>
+                <p class="text-muted small mb-0">All operations are running smoothly.</p>
+            </div>
+        }
+    </div>
+</div>

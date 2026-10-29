@@ -1,0 +1,256 @@
+@model IncidentDetailsViewModel
+@{
+    ViewData["Title"] = $"Triage Incident {Model.Incident.IncidentReference}";
+    var inc = Model.Incident;
+
+    var severityClass = inc.Severity switch
+    {
+        IncidentSeverity.Critical => "badge-severity-critical",
+        IncidentSeverity.High => "badge-severity-high",
+        IncidentSeverity.Medium => "badge-severity-medium",
+        _ => "badge-severity-low"
+    };
+
+    var statusClass = inc.Status switch
+    {
+        IncidentStatus.Submitted => "badge-status-submitted",
+        IncidentStatus.UnderInvestigation => "badge-status-investigation",
+        IncidentStatus.Resolved => "badge-status-resolved",
+        _ => "badge-status-closed"
+    };
+}
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-7">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="incident-ref-badge fs-6">@inc.IncidentReference</span>
+            <span class="badge @severityClass px-3 py-1 rounded-pill">@inc.Severity Severity</span>
+            <span class="badge @statusClass px-3 py-1 rounded-pill">@inc.Status</span>
+        </div>
+        <h3 class="fw-bold text-dark mb-0">@inc.Title</h3>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <a asp-action="Incidents" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i>Back to Incidents
+        </a>
+        <a asp-action="Dashboard" class="btn btn-outline-dark">
+            <i class="bi bi-speedometer2 me-1"></i>SOC Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Details, Evidence & Notes -->
+    <div class="col-lg-8">
+        <!-- Incident Content Card -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-card-text me-2 text-primary"></i>Incident Report Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted small text-uppercase">Description</h6>
+                    <div class="p-3 bg-light rounded-3 text-dark lh-base border" style="white-space: pre-wrap;">@inc.Description</div>
+                </div>
+
+                <!-- Evidence Section -->
+                <div>
+                    <h6 class="fw-bold text-muted small text-uppercase">Evidence Attachment</h6>
+                    @if (!string.IsNullOrEmpty(inc.EvidenceFilePath))
+                    {
+                        <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between bg-light">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark-arrow-down fs-2 text-primary me-3"></i>
+                                <div>
+                                    <div class="fw-semibold text-dark">@(inc.OriginalFileName ?? "Incident-Evidence-File")</div>
+                                    <small class="text-muted">Stored securely on server</small>
+                                </div>
+                            </div>
+                            <a href="@inc.EvidenceFilePath" target="_blank" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
+                                <i class="bi bi-download me-1"></i>View / Download
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-0 fst-italic">No digital evidence attached.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Investigation Notes Section -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-text me-2 text-primary"></i>Investigation Log & Analysis</h5>
+                <span class="badge bg-light text-dark border">@inc.InvestigationNotes.Count Note(s)</span>
+            </div>
+            <div class="card-body p-4">
+                <!-- Add New Note Form -->
+                <form asp-action="AddNote" method="post" class="mb-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="incidentId" value="@inc.Id" />
+                    <label class="form-label fw-bold text-dark small text-uppercase">
+                        <i class="bi bi-pencil me-1"></i>Append New Investigation Finding / Remediation Action
+                    </label>
+                    <textarea name="noteText" rows="3" class="form-control mb-2" placeholder="Document investigation steps, firewall IP block rules, malware hashes, or containment measures..." required></textarea>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary btn-sm px-4 shadow-sm">
+                            <i class="bi bi-plus-circle me-1"></i>Add Note
+                        </button>
+                    </div>
+                </form>
+
+                <hr />
+
+                <!-- Notes Timeline -->
+                @if (inc.InvestigationNotes.Any())
+                {
+                    <div class="timeline">
+                        @foreach (var note in inc.InvestigationNotes)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker">
+                                    <i class="bi bi-chat-left-dots"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-dark">@(note.Investigator?.FullName ?? "SOC Analyst")</span>
+                                        <small class="text-muted">@note.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary" style="white-space: pre-wrap;">@note.Note</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0 fst-italic">No investigation notes entered yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Triage Control Panel & Danger Zone -->
+    <div class="col-lg-4">
+        <!-- Triage Control Panel -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+            <div class="card-header bg-dark text-white py-3 px-4">
+                <h5 class="fw-bold mb-0"><i class="bi bi-sliders me-2 text-info"></i>Triage & Status Control</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="UpdateIncident" asp-route-id="@inc.Id" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Lifecycle Status</label>
+                        <select name="newStatus" asp-for="NewStatus" asp-items="Html.GetEnumSelectList<IncidentStatus>()" class="form-select">
+                        </select>
+                    </div>
+
+                    <!-- Severity -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Severity Classification</label>
+                        <select name="newSeverity" asp-for="NewSeverity" asp-items="Html.GetEnumSelectList<IncidentSeverity>()" class="form-select">
+                        </select>
+                    </div>
+
+                    <!-- Assign Investigator -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Assign SOC Investigator</label>
+                        <select name="newAssignedToUserId" class="form-select">
+                            <option value="">-- Unassigned (Triage Pool) --</option>
+                            @foreach (var investigator in Model.AvailableInvestigators)
+                            {
+                                if (inc.AssignedToUserId == investigator.Id)
+                                {
+                                    <option value="@investigator.Id" selected>@investigator.FullName (@investigator.Department)</option>
+                                }
+                                else
+                                {
+                                    <option value="@investigator.Id">@investigator.FullName (@investigator.Department)</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-check-lg me-1"></i>Save Status Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reporter Metadata -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Reporter Information</h5>
+            </div>
+            <div class="card-body p-4">
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2">
+                        <span class="text-muted text-uppercase fw-bold d-block">Reported By</span>
+                        <span class="fw-semibold text-dark">@(inc.ReportedByUser?.FullName ?? "Unknown")</span>
+                    </li>
+                    <li class="mb-2">
+                        <span class="text-muted text-uppercase fw-bold d-block">Email</span>
+                        <span class="text-dark">@(inc.ReportedByUser?.Email ?? "N/A")</span>
+                    </li>
+                    <li class="mb-2">
+                        <span class="text-muted text-uppercase fw-bold d-block">Department</span>
+                        <span class="text-dark">@(inc.ReportedByUser?.Department ?? "General")</span>
+                    </li>
+                    <li class="mb-2">
+                        <span class="text-muted text-uppercase fw-bold d-block">Date of Occurrence</span>
+                        <span class="text-dark">@inc.IncidentDate.ToString("MMM dd, yyyy - hh:mm tt")</span>
+                    </li>
+                    <li class="mb-2">
+                        <span class="text-muted text-uppercase fw-bold d-block">Report Logged</span>
+                        <span class="text-dark">@inc.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")</span>
+                    </li>
+                    @if (inc.ResolvedAt.HasValue)
+                    {
+                        <li class="mb-0">
+                            <span class="text-muted text-uppercase fw-bold d-block">Resolved On</span>
+                            <span class="text-success fw-bold">@inc.ResolvedAt.Value.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Safe Delete Incident Option -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-octagon me-1"></i>Administrative Action</h6>
+            <p class="small text-muted mb-3">Permanent deletion will remove this incident record and all audit investigation notes.</p>
+            <button type="button" class="btn btn-outline-danger w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#deleteIncidentModal">
+                <i class="bi bi-trash me-1"></i>Delete Incident Record
+            </button>
+        </div>
+
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteIncidentModal" tabindex="-1" aria-labelledby="deleteIncidentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="deleteIncidentModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Deletion</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p>Are you sure you want to permanently delete incident <strong>@inc.IncidentReference</strong>?</p>
+                        <p class="small text-muted mb-0">This operation cannot be reversed.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form asp-action="DeleteIncident" asp-route-id="@inc.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

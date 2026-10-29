@@ -1,0 +1,299 @@
+/* ====================================================================
+   CYBERSECURITY INCIDENT REPORTING PORTAL - CUSTOM STYLES
+   Colors: Deep Navy (#0b132b, #1c2541), Cyan (#38bdf8), Slate (#475569)
+   ==================================================================== */
+
+:root {
+    --cyber-navy-dark: #0b132b;
+    --cyber-navy: #1c2541;
+    --cyber-navy-light: #243356;
+    --cyber-accent: #0284c7;
+    --cyber-cyan: #38bdf8;
+    --cyber-critical: #dc2626;
+    --cyber-high: #ea580c;
+    --cyber-medium: #d97706;
+    --cyber-low: #16a34a;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    background-color: #f1f5f9;
+}
+
+/* Navbar Styling */
+.cyber-navbar {
+    background: linear-gradient(135deg, #0b132b 0%, #1c2541 100%);
+    border-bottom: 2px solid #0284c7;
+}
+
+.brand-icon-shield {
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+    color: #ffffff;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+.brand-title {
+    font-weight: 800;
+    letter-spacing: 1px;
+    font-size: 1.15rem;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.brand-subtitle {
+    font-size: 0.68rem;
+    letter-spacing: 0.8px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.user-avatar-circle {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+/* Stat Cards */
+.cyber-stat-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border-left: 5px solid #0284c7;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cyber-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+.cyber-stat-card.stat-critical {
+    border-left-color: var(--cyber-critical);
+}
+
+.cyber-stat-card.stat-warning {
+    border-left-color: var(--cyber-medium);
+}
+
+.cyber-stat-card.stat-success {
+    border-left-color: var(--cyber-low);
+}
+
+.cyber-stat-card.stat-info {
+    border-left-color: var(--cyber-cyan);
+}
+
+.stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon-wrapper.icon-critical {
+    background-color: #fee2e2;
+    color: var(--cyber-critical);
+}
+
+.stat-icon-wrapper.icon-warning {
+    background-color: #fef3c7;
+    color: var(--cyber-medium);
+}
+
+.stat-icon-wrapper.icon-success {
+    background-color: #dcfce7;
+    color: var(--cyber-low);
+}
+
+.stat-icon-wrapper.icon-info {
+    background-color: #e0f2fe;
+    color: var(--cyber-accent);
+}
+
+.stat-icon-wrapper.icon-primary {
+    background-color: #e2e8f0;
+    color: var(--cyber-navy);
+}
+
+/* Severity Badges */
+.badge-severity-critical {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #f87171;
+    font-weight: 600;
+}
+
+.badge-severity-high {
+    background-color: #ffedd5;
+    color: #9a3412;
+    border: 1px solid #fb923c;
+    font-weight: 600;
+}
+
+.badge-severity-medium {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    font-weight: 600;
+}
+
+.badge-severity-low {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    font-weight: 600;
+}
+
+/* Status Badges */
+.badge-status-submitted {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #7dd3fc;
+    font-weight: 600;
+}
+
+.badge-status-investigation {
+    background-color: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    font-weight: 600;
+}
+
+.badge-status-resolved {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+    font-weight: 600;
+}
+
+.badge-status-closed {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    font-weight: 600;
+}
+
+/* Incident Code Pill */
+.incident-ref-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background-color: #0f172a;
+    color: #38bdf8;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Pulsing Status Dot */
+.status-indicator-dot {
+    width: 9px;
+    height: 9px;
+    background-color: #22c55e;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: cyberPulse 2s infinite;
+}
+
+@keyframes cyberPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 7px rgba(34, 197, 94, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+}
+
+/* Timeline for Investigation Notes */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin-top: 1rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 11px;
+    width: 2px;
+    background: #cbd5e1;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -2rem;
+    top: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #0284c7;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    box-shadow: 0 0 0 3px #e0f2fe;
+}
+
+.timeline-content {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Empty States */
+.empty-state-box {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+}
+
+.empty-state-icon {
+    font-size: 3.5rem;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+}
+
+/* Footer */
+.cyber-footer {
+    background-color: #0b132b;
+    border-top: 1px solid #1e293b;
+}

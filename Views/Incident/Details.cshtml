@@ -1,0 +1,252 @@
+@model IncidentDetailsViewModel
+@{
+    ViewData["Title"] = $"Incident {Model.Incident.IncidentReference}";
+    var inc = Model.Incident;
+
+    var severityClass = inc.Severity switch
+    {
+        IncidentSeverity.Critical => "badge-severity-critical",
+        IncidentSeverity.High => "badge-severity-high",
+        IncidentSeverity.Medium => "badge-severity-medium",
+        _ => "badge-severity-low"
+    };
+
+    var statusClass = inc.Status switch
+    {
+        IncidentStatus.Submitted => "badge-status-submitted",
+        IncidentStatus.UnderInvestigation => "badge-status-investigation",
+        IncidentStatus.Resolved => "badge-status-resolved",
+        _ => "badge-status-closed"
+    };
+
+    // Calculate lifecycle step index (1 to 4)
+    int stepIndex = inc.Status switch
+    {
+        IncidentStatus.Submitted => 1,
+        IncidentStatus.UnderInvestigation => 2,
+        IncidentStatus.Resolved => 3,
+        IncidentStatus.Closed => 4,
+        _ => 1
+    };
+}
+
+<div class="row mb-3 align-items-center">
+    <div class="col-md-8">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="incident-ref-badge fs-6">@inc.IncidentReference</span>
+            <span class="badge @severityClass px-3 py-1 rounded-pill">@inc.Severity Severity</span>
+            <span class="badge @statusClass px-3 py-1 rounded-pill">@inc.Status</span>
+        </div>
+        <h3 class="fw-bold text-dark mb-0">@inc.Title</h3>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        @if (Model.IsAdmin)
+        {
+            <a asp-controller="Admin" asp-action="Details" asp-route-id="@inc.Id" class="btn btn-warning me-2">
+                <i class="bi bi-pencil-square me-1"></i>Manage in Admin Console
+            </a>
+            <a asp-controller="Admin" asp-action="Incidents" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Incidents
+            </a>
+        }
+        else
+        {
+            <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to My Dashboard
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Visual Lifecycle Progress Tracker -->
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+    <h6 class="fw-bold text-muted small text-uppercase mb-3 font-monospace">Incident Triage Lifecycle</h6>
+    <div class="row text-center position-relative">
+        <div class="col-3">
+            <div class="badge rounded-circle p-3 @(stepIndex >= 1 ? "bg-primary text-white" : "bg-light text-muted border") mb-2">
+                <i class="bi bi-file-earmark-plus fs-5"></i>
+            </div>
+            <div class="small fw-bold @(stepIndex >= 1 ? "text-primary" : "text-muted")">1. Submitted</div>
+            <small class="text-muted d-none d-md-block">Report Logged</small>
+        </div>
+        <div class="col-3">
+            <div class="badge rounded-circle p-3 @(stepIndex >= 2 ? "bg-warning text-dark" : "bg-light text-muted border") mb-2">
+                <i class="bi bi-search fs-5"></i>
+            </div>
+            <div class="small fw-bold @(stepIndex >= 2 ? "text-dark" : "text-muted")">2. Investigating</div>
+            <small class="text-muted d-none d-md-block">SOC Analysis</small>
+        </div>
+        <div class="col-3">
+            <div class="badge rounded-circle p-3 @(stepIndex >= 3 ? "bg-success text-white" : "bg-light text-muted border") mb-2">
+                <i class="bi bi-shield-check fs-5"></i>
+            </div>
+            <div class="small fw-bold @(stepIndex >= 3 ? "text-success" : "text-muted")">3. Resolved</div>
+            <small class="text-muted d-none d-md-block">Remediation Done</small>
+        </div>
+        <div class="col-3">
+            <div class="badge rounded-circle p-3 @(stepIndex >= 4 ? "bg-secondary text-white" : "bg-light text-muted border") mb-2">
+                <i class="bi bi-archive fs-5"></i>
+            </div>
+            <div class="small fw-bold @(stepIndex >= 4 ? "text-secondary" : "text-muted")">4. Closed</div>
+            <small class="text-muted d-none d-md-block">Case Archived</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Details & Evidence -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-card-text me-2 text-primary"></i>Incident Description & Evidence</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted small text-uppercase">Detailed Description</h6>
+                    <div class="p-3 bg-light rounded-3 text-dark lh-base border" style="white-space: pre-wrap;">@inc.Description</div>
+                </div>
+
+                <!-- Evidence Section -->
+                <div>
+                    <h6 class="fw-bold text-muted small text-uppercase">Digital Evidence Attachment</h6>
+                    @if (!string.IsNullOrEmpty(inc.EvidenceFilePath))
+                    {
+                        <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between bg-light">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark-arrow-down fs-2 text-primary me-3"></i>
+                                <div>
+                                    <div class="fw-semibold text-dark">@(inc.OriginalFileName ?? "Incident-Evidence-File")</div>
+                                    <small class="text-muted">Stored securely on server</small>
+                                </div>
+                            </div>
+                            <a href="@inc.EvidenceFilePath" target="_blank" class="btn btn-outline-primary btn-sm px-3 rounded-pill">
+                                <i class="bi bi-download me-1"></i>View / Download
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted small mb-0 fst-italic">No digital evidence file was attached to this report.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Investigation Notes Section -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-text me-2 text-primary"></i>Investigation Notes & Updates</h5>
+                <span class="badge bg-light text-dark border">@inc.InvestigationNotes.Count Note(s)</span>
+            </div>
+            <div class="card-body p-4">
+                @if (inc.InvestigationNotes.Any())
+                {
+                    <div class="timeline">
+                        @foreach (var note in inc.InvestigationNotes)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker">
+                                    <i class="bi bi-chat-left-dots"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-dark">@(note.Investigator?.FullName ?? "SOC Analyst")</span>
+                                        <small class="text-muted">@note.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")</small>
+                                    </div>
+                                    <p class="mb-0 text-secondary" style="white-space: pre-wrap;">@note.Note</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0 fst-italic">No investigation notes have been logged for this incident yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Metadata & Actions -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-info-circle me-2 text-primary"></i>Incident Metadata</h5>
+            </div>
+            <div class="card-body p-4">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-3">
+                        <span class="text-muted small text-uppercase fw-bold d-block">Category</span>
+                        <span class="fw-semibold text-dark"><i class="bi bi-tag me-1 text-primary"></i>@inc.Category</span>
+                    </li>
+                    <li class="mb-3">
+                        <span class="text-muted small text-uppercase fw-bold d-block">Reported By</span>
+                        <span class="fw-semibold text-dark">@(inc.ReportedByUser?.FullName ?? "Unknown")</span>
+                        <div class="small text-muted">@(inc.ReportedByUser?.Department ?? "No Dept")</div>
+                    </li>
+                    <li class="mb-3">
+                        <span class="text-muted small text-uppercase fw-bold d-block">Assigned Investigator</span>
+                        @if (inc.AssignedToUser != null)
+                        {
+                            <span class="fw-semibold text-dark"><i class="bi bi-person-badge me-1 text-info"></i>@inc.AssignedToUser.FullName</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Unassigned (Triage Pool)</span>
+                        }
+                    </li>
+                    <li class="mb-3">
+                        <span class="text-muted small text-uppercase fw-bold d-block">Incident Occurred</span>
+                        <span class="text-dark">@inc.IncidentDate.ToString("MMM dd, yyyy - hh:mm tt")</span>
+                    </li>
+                    <li class="mb-3">
+                        <span class="text-muted small text-uppercase fw-bold d-block">Report Submitted</span>
+                        <span class="text-dark">@inc.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")</span>
+                    </li>
+                    @if (inc.ResolvedAt.HasValue)
+                    {
+                        <li class="mb-3">
+                            <span class="text-muted small text-uppercase fw-bold d-block">Resolved At</span>
+                            <span class="text-success fw-semibold"><i class="bi bi-check-all me-1"></i>@inc.ResolvedAt.Value.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Reporter Actions: Withdraw Report -->
+        @if (Model.CanEditOrWithdraw)
+        {
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                <h6 class="fw-bold text-dark mb-2">Report Actions</h6>
+                <p class="small text-muted mb-3">Since your report has not yet been assigned or investigated, you may withdraw it if reported in error.</p>
+                <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                    <i class="bi bi-x-circle me-1"></i>Withdraw This Report
+                </button>
+            </div>
+
+            <!-- Confirmation Modal -->
+            <div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="withdrawModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Withdraw Incident Report</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <p>Are you sure you want to withdraw incident <strong>@inc.IncidentReference</strong>?</p>
+                            <p class="small text-muted mb-0">The status will be updated to <em>Closed</em> and removed from the active triage queue.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form asp-action="Withdraw" asp-route-id="@inc.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger">Confirm Withdrawal</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

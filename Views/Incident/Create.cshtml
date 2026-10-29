@@ -1,0 +1,103 @@
+@model IncidentCreateViewModel
+@{
+    ViewData["Title"] = "Report Security Incident";
+}
+
+<div class="row justify-content-center py-3">
+    <div class="col-lg-9 col-xl-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="card-header bg-dark text-white p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="bi bi-shield-plus text-info me-2"></i>Report Cybersecurity Incident</h4>
+                        <p class="text-muted small mb-0">Fill in accurate incident data to help the Security Operations Center investigate swiftly.</p>
+                    </div>
+                    <span class="badge bg-danger text-uppercase font-monospace">Confidential</span>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form asp-controller="Incident" asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-4" role="alert"></div>
+
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label asp-for="Title" class="form-label fw-bold text-dark">
+                            Incident Title <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Title" class="form-control form-control-lg fs-6" placeholder="e.g. Received Phishing Email claiming to be Bank Transfer Alert" autofocus />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                        <div class="form-text small text-muted">Provide a concise, descriptive title summarizing the event.</div>
+                    </div>
+
+                    <!-- Category & Severity -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Category" class="form-label fw-bold text-dark">
+                                Incident Category <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Category" asp-items="Html.GetEnumSelectList<IncidentCategory>()" class="form-select form-select-lg fs-6">
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Severity" class="form-label fw-bold text-dark">
+                                Estimated Severity <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Severity" asp-items="Html.GetEnumSelectList<IncidentSeverity>()" class="form-select form-select-lg fs-6">
+                            </select>
+                            <span asp-validation-for="Severity" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Incident Date -->
+                    <div class="mb-4">
+                        <label asp-for="IncidentDate" class="form-label fw-bold text-dark">
+                            Date & Approximate Time of Occurrence <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="IncidentDate" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="IncidentDate" class="text-danger small"></span>
+                        <div class="form-text small text-muted">When did you first notice or encounter this incident?</div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-bold text-dark">
+                            Comprehensive Description <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="Description" rows="6" class="form-control" placeholder="Include specifics: sender email addresses, suspicious links, error messages, affected systems, IP addresses, or observed system anomalies..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <!-- File Attachment -->
+                    <div class="mb-4 p-3 bg-light rounded-3 border">
+                        <label asp-for="EvidenceFile" class="form-label fw-bold text-dark d-flex align-items-center">
+                            <i class="bi bi-paperclip me-1 text-primary"></i>Attach Digital Evidence (Optional)
+                        </label>
+                        <input asp-for="EvidenceFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.txt,.log" />
+                        <span asp-validation-for="EvidenceFile" class="text-danger small"></span>
+                        <div class="form-text small text-muted">
+                            Allowed formats: <strong>.png, .jpg, .pdf, .txt, .log</strong>. Maximum size: <strong>5 MB</strong>. Do not upload live malware binaries.
+                        </div>
+                    </div>
+
+                    <!-- Form Buttons -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a asp-action="Dashboard" class="btn btn-outline-secondary px-4">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel & Back
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm fw-semibold">
+                            <i class="bi bi-send-check me-2"></i>Submit Incident Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,48 @@
+## .NET Build Artifacts
+obj/
+bin/
+
+## NuGet Packages
+*.nupkg
+.nuget/
+packages/
+
+## User-specific Visual Studio files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+## Visual Studio Code
+.vscode/
+
+## OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## ASP.NET Core
+wwwroot/uploads/
+*.pfx
+
+## Entity Framework Migrations (keep migrations but not DB snapshots if needed)
+# Migrations/ (do NOT ignore - we need migrations)
+
+## SQLite Database files
+*.db
+*.db-shm
+*.db-wal
+
+## Logs
+*.log
+logs/
+
+## Temp files
+*.tmp
+*.temp
+
+## Environment / Secrets — IMPORTANT: never commit real credentials
+appsettings.Production.json
+.env
+secrets.json

@@ -1,0 +1,243 @@
+@model IncidentFilterViewModel
+@{
+    ViewData["Title"] = "Incident Management & Triage";
+}
+
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="fw-bold text-dark mb-1">Incident Management Console</h2>
+        <p class="text-muted mb-0">Search, filter, assign, and triage cybersecurity incident reports</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <a asp-action="Dashboard" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-speedometer2 me-1"></i>SOC Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filtering Toolbar -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+    <div class="card-body p-4">
+        <form asp-action="Incidents" method="get">
+            <div class="row g-3">
+                <!-- Search Query -->
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input asp-for="SearchQuery" class="form-control border-start-0" placeholder="Reference, title, or reporter..." />
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-md-2 col-sm-6">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Category</label>
+                    <select asp-for="Category" asp-items="Html.GetEnumSelectList<IncidentCategory>()" class="form-select">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <!-- Severity Filter -->
+                <div class="col-md-2 col-sm-6">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Severity</label>
+                    <select asp-for="Severity" asp-items="Html.GetEnumSelectList<IncidentSeverity>()" class="form-select">
+                        <option value="">All Severities</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-2 col-sm-6">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Status</label>
+                    <select asp-for="Status" asp-items="Html.GetEnumSelectList<IncidentStatus>()" class="form-select">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-md-2 col-sm-6 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>Filter
+                    </button>
+                    <a asp-action="Incidents" class="btn btn-outline-secondary" title="Reset Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Incidents Data Table -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-shield-shaded me-2 text-primary"></i>All Incidents (@Model.TotalCount Found)
+        </h5>
+        <span class="badge bg-light text-muted border">Page @Model.PageNumber of @(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
+    </div>
+
+    <div class="card-body p-0">
+        @if (Model.Incidents.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-uppercase font-monospace">
+                        <tr>
+                            <th class="ps-4">Reference</th>
+                            <th>Title & Category</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Reporter</th>
+                            <th>Assigned To</th>
+                            <th>Created On</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Incidents)
+                        {
+                            var severityClass = item.Severity switch
+                            {
+                                IncidentSeverity.Critical => "badge-severity-critical",
+                                IncidentSeverity.High => "badge-severity-high",
+                                IncidentSeverity.Medium => "badge-severity-medium",
+                                _ => "badge-severity-low"
+                            };
+
+                            var statusClass = item.Status switch
+                            {
+                                IncidentStatus.Submitted => "badge-status-submitted",
+                                IncidentStatus.UnderInvestigation => "badge-status-investigation",
+                                IncidentStatus.Resolved => "badge-status-resolved",
+                                _ => "badge-status-closed"
+                            };
+
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="incident-ref-badge">@item.IncidentReference</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-dark">@item.Title</div>
+                                    <small class="text-muted"><i class="bi bi-tag me-1"></i>@item.Category</small>
+                                </td>
+                                <td>
+                                    <span class="badge @severityClass px-2 py-1 rounded-pill">
+                                        @item.Severity
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @statusClass px-2 py-1 rounded-pill">
+                                        @item.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-dark">@(item.ReportedByUser?.FullName ?? "Unknown")</div>
+                                    <small class="text-muted">@(item.ReportedByUser?.Department ?? "Staff")</small>
+                                </td>
+                                <td>
+                                    @if (item.AssignedToUser != null)
+                                    {
+                                        <span class="small text-dark"><i class="bi bi-person-check text-success me-1"></i>@item.AssignedToUser.FullName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="small text-muted fst-italic">Unassigned</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="small text-dark">@item.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</div>
+                                    <small class="text-muted">@item.CreatedAt.ToLocalTime().ToString("hh:mm tt")</small>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary" title="Triage & Manage Incident">
+                                            <i class="bi bi-gear-fill me-1"></i>Manage
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id" title="Delete Incident Record">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Delete Modal for safety -->
+                                    <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1" aria-labelledby="deleteLabel-@item.Id" aria-hidden="true">
+                                        <div class="modal-dialog text-start">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title" id="deleteLabel-@item.Id"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Deletion</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body p-4">
+                                                    <p>Are you sure you want to permanently delete incident <strong>@item.IncidentReference</strong>?</p>
+                                                    <p class="small text-danger mb-0"><strong>Warning:</strong> This will also delete all associated investigation notes and cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="DeleteIncident" asp-route-id="@item.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="p-3 border-top d-flex justify-content-between align-items-center">
+                    <div class="small text-muted">
+                        Showing page @Model.PageNumber of @Model.TotalPages (@Model.TotalCount total items)
+                    </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item @(Model.PageNumber <= 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Incidents" 
+                                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                                   asp-route-searchQuery="@Model.SearchQuery"
+                                   asp-route-category="@Model.Category"
+                                   asp-route-severity="@Model.Severity"
+                                   asp-route-status="@Model.Status">Previous</a>
+                            </li>
+
+                            @for (int p = 1; p <= Model.TotalPages; p++)
+                            {
+                                <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                                    <a class="page-link" asp-action="Incidents" 
+                                       asp-route-pageNumber="@p"
+                                       asp-route-searchQuery="@Model.SearchQuery"
+                                       asp-route-category="@Model.Category"
+                                       asp-route-severity="@Model.Severity"
+                                       asp-route-status="@Model.Status">@p</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(Model.PageNumber >= Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Incidents" 
+                                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                                   asp-route-searchQuery="@Model.SearchQuery"
+                                   asp-route-category="@Model.Category"
+                                   asp-route-severity="@Model.Severity"
+                                   asp-route-status="@Model.Status">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state-box">
+                <i class="bi bi-funnel empty-state-icon"></i>
+                <h5 class="fw-bold text-dark">No Incidents Found</h5>
+                <p class="text-muted small mb-0">No incident reports match your current filter criteria.</p>
+                <a asp-action="Incidents" class="btn btn-outline-primary btn-sm mt-3">Reset All Filters</a>
+            </div>
+        }
+    </div>
+</div>
